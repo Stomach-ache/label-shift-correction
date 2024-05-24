@@ -1,9 +1,6 @@
 import os
 from collections import OrderedDict
-
 import torch
-
-# gen feature
 import torchvision.transforms as transforms
 from torch.utils.data import DataLoader, Dataset
 import torch.nn as nn
@@ -573,7 +570,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
