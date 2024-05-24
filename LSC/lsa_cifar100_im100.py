@@ -1,7 +1,5 @@
 import os
-
 import torch
-
 from torch.utils.data import DataLoader, Dataset
 import torch.nn as nn
 import torch.nn.functional as F
@@ -281,7 +279,7 @@ def check_imb(head_prob, med_prob, tail_prob):
     """
     return 1: forward; 0:uniform; -1: backward
     """
-    if head_prob > 2.0 * tail_prob and head_prob > med_prob:
+    if head_prob > 1.5 * tail_prob and head_prob > med_prob:
         return 1
     if tail_prob > 1.5 * head_prob and tail_prob > med_prob:
         return -1
@@ -296,7 +294,7 @@ def max_logits_score(all_logits):
 
 def LDE_adapt(net, lde_model, val_dataset, val_loader, org_logits_path, train_topk=100, force_pred_logits=False):
     param, param_names = PDA.collect_params(net)
-    lr = 1e-3  # args.lr
+    lr = 1e-3  
     optimizer = torch.optim.SGD(param, lr, momentum=0.9)
     PDA_model = PDA(net, optimizer=optimizer)
     PDA_model = PDA_model.cuda()
@@ -328,10 +326,10 @@ def LDE_adapt(net, lde_model, val_dataset, val_loader, org_logits_path, train_to
     class_num = 100
     all_3_feat = all_feat.reshape(-1, 3, class_num)
     final_tensor = torch.zeros_like(all_feat)
-    y_gt = torch.tensor(list(val_dataset.num_per_cls_dict.values())).cuda()
+    
     final_tensor_list = []
     infer_distri_list = []
-    logits_score = []
+    
     final_testk = train_topk
     testK_list = [i for i in range(10, 110, 10)] + [train_topk]
     class_num = 100
@@ -350,15 +348,6 @@ def LDE_adapt(net, lde_model, val_dataset, val_loader, org_logits_path, train_to
     head_prob = mean_dist[:36].mean()
     med_prob = mean_dist[36:70].mean()
     tail_prob = mean_dist[70:].mean()
-
-    head_idx = head_cmp > 1.5 * tail_cmp
-    tail_idx = tail_cmp > 1.5 * head_cmp
-    if head_idx.sum() == 0:
-        _, idx = torch.sort(head_cmp)
-        head_idx[idx[-1]] = True
-    if tail_idx.sum() == 0:
-        _, idx = torch.sort(tail_cmp)
-        tail_idx[idx[-1]] = True
 
     dist_flag = check_imb(head_prob, med_prob, tail_prob)
     print(f"head prob: {head_prob}\nmed prb: {med_prob}\ntail prob : {tail_prob}")
@@ -495,7 +484,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
