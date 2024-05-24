@@ -1,8 +1,6 @@
 import os
 from collections import OrderedDict
-
 import torch
-
 from torch.utils.data import DataLoader, Dataset
 import torch.nn as nn
 import torch.nn.functional as F
@@ -555,7 +553,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
